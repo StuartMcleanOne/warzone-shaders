@@ -350,7 +350,7 @@ def technique_order(top):
     return order
 
 
-def render(preset, frames_in, shaders, textures_dir, n_frames=120, log=print):
+def render(preset, frames_in, shaders, textures_dir, n_frames=120, log=print, capture=None, start_ms=5000.0):
     """frames_in: list of RGB uint8 arrays (the same frame repeated is fine). Returns output RGB of the last frame."""
     top, sections = read_ini(preset)
     defs = split_defs(top.get("PreprocessorDefinitions", ""))
@@ -383,10 +383,12 @@ def render(preset, frames_in, shaders, textures_dir, n_frames=120, log=print):
     dt = 1000.0 / 60.0
     for i in range(n_frames):
         rt.set_frame(frames_in[i % len(frames_in)])
-        rt.frame, rt.time_ms = i, 5000.0 + i * dt
+        rt.frame, rt.time_ms = i, start_ms + i * dt
         for t, eff in plan:
             rt.run_technique(eff, eff["techniques"][t], dt)
         GL.glFinish()
+        if capture is not None and i >= n_frames - capture[0] * capture[1] and (n_frames - 1 - i) % capture[1] == 0:
+            capture[2].append(rt.read_back())
     out = rt.read_back()
     for p in problems:
         log("  ! " + p)
@@ -397,13 +399,28 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("preset"); ap.add_argument("frame"); ap.add_argument("out")
     ap.add_argument("--frames", type=int, default=120)
+    ap.add_argument("--gif", help="also write an animated GIF of the last frames")
+    ap.add_argument("--gif-count", type=int, default=40)
+    ap.add_argument("--gif-every", type=int, default=6, help="frames between GIF images (6 = 0.1 s)")
+    ap.add_argument("--crop", help="x0,y0,x1,y1 crop for the GIF")
     ap.add_argument("--shaders", default=os.path.join(REPO, "game", "reshade-shaders", "Shaders"))
     ap.add_argument("--textures", default=os.pathsep.join([os.path.join(REPO, "game", "reshade-shaders", "Textures"),
                                                            "/mnt/user-data/uploads/reshade-shaders/Textures"]))
     a = ap.parse_args()
     img = np.asarray(Image.open(a.frame).convert("RGB"))
-    out, chain, problems = render(a.preset, [img], a.shaders, a.textures, a.frames)
+    cap = None
+    frames = a.frames
+    if a.gif:
+        cap = (a.gif_count, a.gif_every, [])
+        frames = max(a.frames, a.gif_count * a.gif_every + 60)
+    out, chain, problems = render(a.preset, [img], a.shaders, a.textures, frames, capture=cap)
     Image.fromarray(out).save(a.out)
+    if a.gif:
+        ims = [Image.fromarray(f) for f in cap[2]]
+        if a.crop:
+            box = tuple(int(v) for v in a.crop.split(","))
+            ims = [im.crop(box) for im in ims]
+        ims[0].save(a.gif, save_all=True, append_images=ims[1:], duration=a.gif_every * 1000 // 60, loop=0)
     print("chain:", " > ".join(chain))
     sys.exit(1 if problems else 0)
 
