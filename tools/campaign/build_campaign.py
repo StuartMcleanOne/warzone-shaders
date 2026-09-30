@@ -18,22 +18,22 @@ OUT = os.path.join(ROOT, "game", "reshade-shaders", "Custom", "Campaign")
 LOOKS = {
     # name: dict(wb=gain rgb, lift=shadow tint rgb, gamma, contrast, sat, shoulder, tib=natural-tiberium strength,
     #            split=highlight tint rgb, vig=vignette amount, grain)
-    "WZ_Baked_Day":    dict(wb=(1.10, 1.00, 0.82), lift=(0.030, 0.014, 0.000), gamma=0.94, contrast=1.16, sat=0.86,
+    "WZ_Baked_Day":    dict(wb=(1.14, 1.00, 0.76), lift=(0.040, 0.018, 0.000), gamma=0.92, contrast=1.22, sat=0.84,
                             shoulder=0.72, tib=1.0, split=(1.05, 1.00, 0.90), vig=-0.45, grain=0.10,
                             note="Scorching, sun-bleached day: hot amber light, bleached colour, soft glare rolloff."),
-    "WZ_Day":          dict(wb=(1.04, 1.00, 0.94), lift=(0.008, 0.006, 0.004), gamma=0.98, contrast=1.12, sat=0.94,
+    "WZ_Day":          dict(wb=(1.06, 1.00, 0.91), lift=(0.012, 0.008, 0.004), gamma=0.97, contrast=1.18, sat=1.02,
                             shoulder=0.82, tib=1.0, split=(1.02, 1.0, 0.98), vig=-0.40, grain=0.10,
                             note="Clear day: more depth and warmth, natural tiberium."),
-    "WZ_Overcast":     dict(wb=(0.95, 1.00, 1.05), lift=(0.000, 0.012, 0.026), gamma=1.03, contrast=1.08, sat=0.68,
+    "WZ_Overcast":     dict(wb=(0.93, 1.00, 1.07), lift=(0.000, 0.016, 0.034), gamma=1.05, contrast=1.14, sat=0.62,
                             shoulder=0.82, tib=1.0, split=(0.98, 1.0, 1.02), vig=-0.55, grain=0.14,
                             note="Grey, heavy sky: drained colour, cold shadows, the muted dystopia."),
-    "WZ_Night":        dict(wb=(0.90, 1.00, 1.12), lift=(0.000, 0.018, 0.045), gamma=0.90, contrast=1.10, sat=0.74,
+    "WZ_Night":        dict(wb=(0.86, 0.98, 1.16), lift=(0.000, 0.022, 0.060), gamma=0.90, contrast=1.16, sat=0.72,
                             shoulder=0.88, tib=1.0, split=(1.05, 1.0, 0.93), vig=-0.65, grain=0.16,
                             note="For missions that are already dark: no extra darkening, moonlit blue shadows, lights stay warm."),
     "WZ_Burning_Dusk": dict(wb=(1.14, 0.97, 0.80), lift=(0.030, 0.000, 0.034), gamma=0.97, contrast=1.16, sat=1.02,
                             shoulder=0.78, tib=1.0, split=(1.06, 0.98, 0.88), vig=-0.55, grain=0.12,
                             note="Red-sky missions: amber light, violet shadows."),
-    "WZ_Ion_Storm":    dict(wb=(0.92, 1.00, 1.10), lift=(0.010, 0.016, 0.045), gamma=1.06, contrast=1.24, sat=0.50,
+    "WZ_Ion_Storm":    dict(wb=(0.90, 1.00, 1.12), lift=(0.022, 0.010, 0.060), gamma=1.08, contrast=1.30, sat=0.45,
                             shoulder=0.82, tib=0.9, split=(0.96, 1.0, 1.06), vig=-0.65, grain=0.18,
                             note="Ion storm missions: drained colour, cold electric shadows, hard contrast."),
     "WZ_Snow_Day":     dict(wb=(0.94, 1.00, 1.08), lift=(0.000, 0.008, 0.022), gamma=1.02, contrast=1.10, sat=0.82,
@@ -85,17 +85,18 @@ def natural_tiberium(c, strength):
     # green: dark parts -> deep emerald (150 deg), bright tips -> pale yellow-green (95 deg); calm the neon
     g_h = (150 - 55 * ss(0.25, 0.95, v)) / 360
     neon = ss(0.65, 1.0, s) * ss(0.5, 1.0, v)
-    g_s = s * (1 - 0.40 * neon) * (1 - 0.15 * ss(0.8, 1.0, v)) * 0.9
+    g_s = s * (1 - 0.15 * neon)
     g_v = v * (1 - 0.06 * neon)
     # blue: towards icy steel (212 deg), less saturated, bright parts go pale
     b_h = np.full_like(h, 212 / 360)
-    b_s = s * (0.62 - 0.22 * ss(0.6, 1.0, v))
+    b_s = s * 0.78
     b_v = v * 0.97
     hg = np.stack([h + (g_h - h) * 0.85, g_s, g_v], -1)
     hb = np.stack([h + (((b_h - h + 0.5) % 1.0) - 0.5) * 0.8, b_s, b_v], -1)
     out = c.copy()
-    wg = (green * strength)[..., None]
-    wb = (blue * strength)[..., None]
+    # keep the glowing lime / neon at the bright tips; reshape the body of the crystal
+    wg = (green * strength * (1 - 0.65 * ss(0.65, 1.0, v)))[..., None]
+    wb = (blue * strength * (1 - 0.70 * ss(0.55, 1.0, v)))[..., None]
     out = out * (1 - wg) + hsv2rgb(hg) * wg
     out = out * (1 - wb) + hsv2rgb(hb) * wb
     return out
@@ -120,17 +121,32 @@ def grade(c, p):
     # gamma, contrast around 0.45
     x = np.clip(x, 0, None) ** p["gamma"]
     x = 0.45 + (x - 0.45) * p["contrast"]
-    # saturation
+    # saturation (tiberium keeps most of its glow colour)
+    hsv0 = rgb2hsv(c)
+    tibm = np.maximum(hue_window(hsv0[..., 0], 118 / 360, 40 / 360, 15 / 360), hue_window(hsv0[..., 0], 235 / 360, 35 / 360, 12 / 360))
+    tibm = tibm * ss(0.2, 0.45, hsv0[..., 1]) * ss(0.2, 0.45, hsv0[..., 2])
+    sat = p["sat"] + (max(p["sat"], 1.0) - p["sat"]) * 0.8 * tibm
     l = luma(x)[..., None]
-    x = l + (x - l) * p["sat"]
+    x = l + (x - l) * sat[..., None]
     # soft highlight shoulder
     k = p["shoulder"]
     over = np.maximum(x - k, 0)
     x = np.minimum(x, k) + over / (1 + over / (1 - k))
     x = np.clip(x, 0, 1)
-    # hot protection: fire, explosions, lamps, near-white keep the game's colour
-    m = (hot_mask(c) * 0.85)[..., None]
-    return x * (1 - m) + c * m
+    # fire, explosions, weapon fire: hotter and richer than the game drew them, the same in every preset;
+    # lamps and near-white: pushed towards clean bright white
+    hsv = rgb2hsv(c)
+    h, sa, v = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+    warm = hue_window(h, 30 / 360, 32 / 360, 12 / 360)
+    fire = ss(0.72, 0.92, v) * warm * ss(0.45, 0.65, sa)
+    hot_h = h + (np.where(h > 0.5, h - 1, h) * 0 + 0.075 - np.where(h > 0.5, h - 1, h)) * 0.35
+    pop = hsv2rgb(np.stack([hot_h % 1.0, np.clip(sa * 1.25 + 0.05, 0, 1), np.clip(v * 1.15, 0, 1)], -1))
+    white = ss(0.82, 0.97, c.min(-1))
+    lamp = np.clip(c * 1.08 + 0.02, 0, 1)
+    m1 = (fire * 0.9)[..., None]
+    x = x * (1 - m1) + pop * m1
+    m2 = (white * 0.85)[..., None]
+    return x * (1 - m2) + lamp * m2
 
 
 def make_lut(p):
@@ -146,9 +162,12 @@ def make_lut(p):
 
 def preset_ini(name, p):
     lines = [f'PreprocessorDefinitions=fLUT_TextureName="WZC_{name[3:]}_lut.png"',
-             "Techniques=UI_Before,Deband,LUT,Vignette,FilmGrain,UI_After",
-             "TechniqueSorting=UI_Before,Deband,LUT,Vignette,FilmGrain,UI_After",
+             "Techniques=UI_Before,LightGuard_Before,Deband,LUT,Vignette,FilmGrain,LightGuard_After,UI_After",
+             "TechniqueSorting=UI_Before,LightGuard_Before,Deband,LUT,Vignette,FilmGrain,LightGuard_After,UI_After",
              "",
+             "[CnCLightGuard.fx]", "Debug_View=0", "Fire_Anchor=0.350000", "Fire_Gain=0.350000", "Fire_Reach=0.000000",
+             "Fire_Saturation=0.350000", "Fire_Strength=1.000000", "Glow_Size=1.200000", "Glow_Strength=0.200000",
+             "Lamp_Anchor=0.500000", "Lamp_Boost=0.450000", "Lamp_Radius=3.000000", "Lamp_Strength=1.000000", "",
              "[CnCUIskip.fx]", "Isolate_UI=1", "",
              "[Deband.fx]", "custom_avgdiff=1.800000", "custom_maxdiff=4.000000", "custom_middiff=2.000000",
              "debug_output=0", "iterations=1", "range=16.000000", "threshold_preset=1", "",
