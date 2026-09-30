@@ -1,0 +1,4 @@
+tools/render/*.o
+tools/render/fxdump
+tools/render/fxcheck
+__pycache__/
