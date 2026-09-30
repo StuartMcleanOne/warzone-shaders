@@ -1,0 +1,13 @@
+const {chromium}=require('playwright-core');
+(async()=>{
+ const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium',args:['--no-sandbox']});
+ const p=await b.newPage({viewport:{width:794,height:1123}});
+ await p.emulateMedia({media:'print'});
+ await p.goto('file://'+process.cwd()+'/local.html');await p.waitForTimeout(600);
+ const r=await p.evaluate(()=>[...document.querySelectorAll('.page')].map((e,i)=>{
+  if(e.classList.contains('cover'))return 1;
+  const kids=[...e.children].filter(c=>!c.classList.contains('pf'));
+  const fits=z=>{kids.forEach(c=>c.style.zoom=z);return e.scrollHeight<=e.clientHeight+1&&e.scrollWidth<=e.clientWidth+1};
+  let lo=0.8,hi=1.7;for(let k=0;k<14;k++){const m=(lo+hi)/2;fits(m)?lo=m:hi=m}
+  const z=Math.floor(lo*100-1)/100;kids.forEach(c=>c.style.zoom=z);return z}));
+ console.log(JSON.stringify(r));await b.close();})();

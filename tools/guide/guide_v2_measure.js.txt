@@ -1,0 +1,13 @@
+const {chromium}=require('playwright-core');const fs=require('fs');
+(async()=>{
+ const items=JSON.parse(fs.readFileSync(0,'utf8'));
+ const loc=fs.readFileSync('local.html','utf8');
+ const ff=(loc.match(/@font-face\{[^}]*\}/g)||[]).join('\n');
+ const css=fs.readFileSync('guide.css','utf8');
+ const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium',args:['--no-sandbox']});
+ const p=await b.newPage({viewport:{width:794,height:1123}});
+ await p.emulateMedia({media:'print'});
+ await p.setContent('<!doctype html><meta charset="utf-8"><style>'+ff+css+'</style><div class="page stage" style="height:auto;--sc:#5cf28a"><div id="m" class="grid" style="display:block"></div></div>');
+ await p.evaluate(()=>document.fonts.ready);
+ const hs=await p.evaluate(items=>{const m=document.getElementById('m');return items.map(h=>{m.innerHTML=h;return m.firstElementChild.getBoundingClientRect().height})},items);
+ console.log(JSON.stringify(hs));await b.close();})();

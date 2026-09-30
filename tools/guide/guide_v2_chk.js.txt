@@ -1,0 +1,8 @@
+const {chromium}=require('playwright-core');
+(async()=>{
+ const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium',args:['--no-sandbox']});
+ const p=await b.newPage({viewport:{width:794,height:1123}});
+ await p.emulateMedia({media:'print'});
+ await p.goto('file://'+process.cwd()+'/local.html');await p.waitForTimeout(600);
+ const r=await p.evaluate(()=>[...document.querySelectorAll('.page')].map((e,i)=>{const pr=e.getBoundingClientRect();let m=0;e.querySelectorAll('*').forEach(c=>{if(c.closest('.crys'))return;const b=c.getBoundingClientRect();m=Math.max(m,b.bottom-pr.bottom)});return [i+1,Math.round(pr.height),Math.round(m),e.scrollHeight-e.clientHeight]}));
+ console.log(JSON.stringify(r));await b.close();})();

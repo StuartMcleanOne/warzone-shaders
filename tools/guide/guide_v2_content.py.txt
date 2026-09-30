@@ -1,0 +1,109 @@
+# (id, display name, does, try, watch)
+S1=[
+("Deband","Deband","Smooths colour banding, the visible steps in gradients like fog, sky and glow. Cheap and safe.","Presets use range 16 to 24, threshold_preset 0 or 1, iterations 1.","Leave it on. Put it first or near first so later effects work on smooth gradients."),
+("FXAA","FXAA","Fast edge smoothing for jagged edges on units and buildings.","EdgeThreshold 0.125 and Subpix 0.2 to 0.25 are the values in use.","Softens the whole picture slightly. Use one anti-aliasing effect, not two."),
+("SMAA","SMAA","Sharper edge smoothing than FXAA, but heavier.","EdgeDetectionThreshold 0.05 to 0.1 in the presets that use it.","Compare it with FXAA by eye, then keep one."),
+("KNearestNeighbors / NonLocalMeans","Denoise (KNN, NLM)","Two noise-removal effects that try to keep edges.","No preset uses them.","They soften fine detail. Rarely needed in a game that is already clean."),
+("SurfaceBlur","Surface Blur","Blurs flat areas while keeping edges. A strong soft look.","No preset uses it.","Easy to overdo, and heavy. Use sparingly."),
+]
+S2a=[
+("LUT","LUT","Applies a whole colour grade from a small lookup image. The backbone of the custom presets: one step sets the mood.","Set the image with fLUT_TextureName in PreprocessorDefinitions. fLUT_AmountChroma and fLUT_AmountLuma are 1.0 (full) in every preset. Lower them to blend.","The image must match the layout the shader expects (1024 by 32). Grade tiberium in both green and blue."),
+("MultiLUT","Multi LUT","Colour grade from a set of built-in lookup images you pick from.","Used once, in the Weather preset.","Handy for trying looks, but a custom LUT gives more control."),
+("Curves","Curves","Adds or removes contrast with an S-curve.","Contrast 0.2 to 0.65 across the presets, Formula 4.","Small steps. A strong curve crushes shadows and clips highlights."),
+("LevelsPlus","Levels Plus","Sets black point, white point and gamma, per colour channel.","Used once: an input black point of about 0.06 in Fog.","Fixes washed-out or crushed pictures. Clipping loses detail for good."),
+("LiftGammaGain","Lift Gamma Gain","Colour balance for shadows, midtones and highlights separately.","Values stay between about 0.94 and 1.08 in RGB_Lift, RGB_Gamma and RGB_Gain.","Fine control. Nudge, do not shove."),
+("Vibrance","Vibrance","Boosts the colours that are least saturated first.","Vibrance 0.15 to 0.35.","Kinder than a plain saturation boost. Still raise slowly."),
+("Colourfulness","Colourfulness","Overall saturation. Negative values mute the colour.","The presets use it to mute: colourfulness -0.1 to -0.45.","Easy to overdo on tiberium."),
+("prod80_04_ContrastBrightnessSaturation","PD80 Contrast Bright Sat","Contrast, brightness and saturation, with per-colour saturation controls.","contrast 0 to 0.25, saturation -0.05 to -0.4, vibrance -0.1 to -0.15.","The per-colour sliders (red, green, yellow and others) are the useful part."),
+("prod80_01A_RT_Correct_Contrast / 01B_RT_Correct_Color","PD80 Correct Contrast and Color","Automatically fix black and white points and remove colour casts.","Used together in the Remaster preset, which is the lightest grade.","Correction tools. Good under a grade, subtle on their own."),
+]
+S2b=[
+("Tint","Tint (Sepia)","Washes the picture toward one colour.","Weather uses Strength 0.58 with a warm tint.","Strong. Low values only."),
+("Technicolor","Technicolor","Old-film colour look that pushes reds and greens.","Strength 0.2 to 0.47, Power 3.4 to 4.","A tone effect. Count it toward the two-tone limit."),
+("Technicolor2","Technicolor 2","A subtler second Technicolor look.","Strength 1.0, ColorStrength 0.2 per channel, Saturation 0.48 to 1.0.","A tone effect. Do not stack with Technicolor."),
+("DPX","DPX","Cinema-film look: warm and contrasty.","Strength 0.2 to 0.5.","A tone curve. Stacks badly with Filmic Pass or HDR."),
+("FilmicPass","Filmic Pass","Filmic tone curve with a bleach and fade look.","Strength 0.7 to 0.85, Bleach 0.2 to 0.45, Fade 0.05 to 0.25, Saturation -0.05 to -0.2.","A tone curve. Used in the Fog, Heat, OG and Scorched Earth presets."),
+("HDR","Fake HDR","Fake high-dynamic-range look. Gritty and heavy.","HDRPower 1.0 to 1.3.","Easy to overcook. Try it low or skip it."),
+("Tonemap","Tonemap","Exposure, gamma and saturation controls.","No preset uses it.","A plain tone curve. Counts toward the limit."),
+("EyeAdaption","Eye Adaption","Brightens or darkens slowly as the scene changes.","Used once, in Weather: Strength 1.0, Delay 1.6.","Can pump on a static camera."),
+("Monochrome","Monochrome","Black and white with adjustable filter colours.","No preset uses it. The GDI feed gets its look from a LUT.","Good for a monitor-feed style."),
+("HSLShift / ColorMatrix","HSL Shift and Color Matrix","Shift hues per colour range, or remix the colour channels with a matrix.","ColorMatrix is used by the default Warzone, Crimson Sun and Golden Hour presets.","Advanced. Small changes move colour a lot."),
+]
+S3a=[
+("AmbientLight","Ambient Light","Adds a soft light wash spread from the bright areas. Sets the mood.","alInt 5 to 7.5, alThreshold 5 to 15, alAdapt 0.7 to 1.0.","Keep AL_Lens off. AL_Dirt is what produces the glow, so leave it on and AL_DirtTex off."),
+("MagicBloom","Magic Bloom","The strongest bloom, with adaptive exposure.","fBloom_Intensity 3.5 to 5, fBloom_Threshold 3.5 to 6, fExposure 0.42 to 0.55.","Threshold and intensity do most of the work. Use one main bloom."),
+("Bloom (qUINT)","Bloom (qUINT)","Clean, gentle bloom with seven blur layers you can weight.","BLOOM_INTENSITY 0.25 to 0.8, BLOOM_SAT 0.2 to 1.0, BLOOM_CURVE 1.5 to 3.","The gentle choice. Do not stack it with Magic Bloom at full strength."),
+("PPFXBloom","PPFX Bloom","Bloom from the PPFX pack.","Used once, in Tiberium Bloom.","Same job as the other blooms. Pick one."),
+("prod80_02_Bloom","PD80 Bloom","Bloom with a colour-temperature tint.","BloomMix 0.4 to 0.65, BloomLimit 0.33 to 0.65, BlurSigma 12 to 18, enableBKelvin 1. BKelvin: 11000 cold, 6500 neutral, 3800 desert, 3200 warm film, 2400 fire.","The tint is the point. Best as a coloured glow on top of one main bloom."),
+]
+S3b=[
+("Pirate_Bloom","Pirate Bloom","Bloom with its own tint controls.","Used once, in Weather.","Older look. The other blooms do more."),
+("BloomAndLensFlares","Bloom + Lens Flares","Bloom plus lens flares, godrays and lens dirt.","fBloomAmount 0.3 to 0.8, fBloomThreshold 0.625 to 1.0. bLenzEnable, bGodrayEnable, bAnamFlareEnable, bChapFlareEnable and bLensdirtEnable are all 0 in our presets.","The plain bloom works. The flare and godray features look wrong in this engine."),
+("HeatHaze","Heat Haze","Wobbling heat-shimmer distortion.","fHeatHazeSpeed 0.3 to 1.3, fHeatHazeOffset 0.5 to 0.9, fHeatHazeChromaAmount 0 to 0.2, fHeatHazeTextureScale 5 to 8.","Best for fire and desert looks. It moves the whole picture, so keep it small."),
+("ReflectiveBumpmapping","Reflective Bump Mapping","Adds shiny highlights that follow image brightness.","fRBM_ReliefHeight 0.3 to 0.6, fRBM_FresnelReflectance 0.3 to 0.4, iRBM_SampleCount 32 to 48.","Partly works here and reads flat ground oddly. Judge it by eye."),
+("MotionBlur","Motion Blur","Smears frames together.","No preset uses it.","Smears a top-down strategy picture. Usually leave off."),
+]
+S4=[
+("Clarity","Clarity","Adds local contrast to the midtones. Sprites pop without harsh edges.","ClarityStrength 0.4 to 0.7, ClarityRadius 3, ClarityDarkIntensity 0.4 to 0.5, ClarityLightIntensity 0 to 0.3.","Goes after bloom. More than 0.7 starts to look gritty."),
+("LumaSharpen","Luma Sharpen","Sharpens using brightness only. The safe default.","sharp_strength 0.35 to 0.65, sharp_clamp 0.02 to 0.035.","Use one sharpener. Raise this one before adding another."),
+("HighPassSharp","High Pass Sharpen","Overlay-style sharpening.","HighPassSharpStrength 0.35 to 0.71, HighPassSharpRadius 1 or 3.","Strong and easy to crunch. Do not run it on top of Luma Sharpen."),
+("DELC_Sharpen","Sharpen (qUINT)","Adjustable sharpening for texture detail.","Used once, in Weather.","One sharpener at a time."),
+("AdaptiveSharpen","Adaptive Sharpen","Sharpens edges more than flat areas, which reduces halos.","No preset uses it.","Try it in place of Luma Sharpen, not with it."),
+("Mode1 / Mode2 / Mode3","FineSharp","Fine multi-pass sharpening in three modes.","No preset uses it.","Heavy. Pick one mode only."),
+("FilmicAnamorphSharpen","Filmic Anamorphic Sharpen","Film-style sharpening with a softer character.","No preset uses it.","One sharpener at a time."),
+]
+S5=[
+("Vignette","Vignette","Darkens the screen edges.","Radius 1.1 to 1.6, Amount -0.6 to -1.2, Slope 2 to 6, Type 0, Ratio 1. Centre 0.395, 0.518333 sits on the playfield.","Centre it on the playfield, not the full frame, so the sidebar does not skew it."),
+("FilmGrain","Film Grain","Adds film noise.","Intensity 0.12 to 0.28, Variance 0.3 to 0.45, SignalToNoiseRatio 4 to 8.","Keep it low. It goes last, just before UI After."),
+("FilmGrain2","Film Grain 2","A second style of film noise with colour control.","grainamount 0.013 to 0.035, coloramount 0.15 to 0.6, grainsize 1.6 to 1.7.","Use one grain effect, not both."),
+("CA","Chromatic Aberration","Splits colour fringes toward the edges, like a cheap lens.","No preset uses it.","Subtle only. It fringes sprite edges."),
+("ScanlinesAbs","Scanlines","Horizontal scanlines for the tactical-feed look.","GDI Tactical Feed uses amp 1.0 to 1.25 and lines_black up to 0.86.","At 800 by 600 the lines are coarse. Low strength."),
+("CRTHyllian","CRT (Hyllian and others)","Tube-monitor emulation. Ten variants ship: Lottes, Hyllian, Easymode, Geom, cgwg, Caligari, Aperture, Advanced, GTU and NES Mini.","The Retro preset uses Hyllian with SCANLINES_STRENGTH 0.05, SHARPNESS 5, PHOSPHOR 1.","Heavy looks. Use one CRT only."),
+]
+NOVELTY=["Border","Nostalgia","EGA Filter","HQ4X","LeiFx 3DFX","Resolutionizer","NTSC RetroArch","NTSC MAME","PAL","PAL R57","ASCII","Cartoon","Glitch","Layer","Aspect Ratio","Perfect Perspective","Splitscreen","Tilt Shift","Gaussian Blur","Daltonize","Tri Dither","Night Vision","MC Amber","MC Green","MC Orange"]
+DEAD=[("Shadows","MXAO, PPFX SSDO"),("Depth of field","Light DoF (Near, Far, AutoFocus), Cinematic DOF, Ring DOF, Magic DOF, GP65CJ042 DOF, Matso DOF, MartyMcFly DOF"),("Distance effects","Depth Haze, Adaptive Fog, Emphasize, Depth3D, Chromakey, Stage Depth, Display Depth"),("Light rays","PPFX Godrays")]
+PRESETS_AI=[
+("AI_01_Remaster","Lightest grade. Fixes contrast and colour cast, then debands and sharpens."),
+("AI_03_TiberiumBloom","Short chain: vibrance and a bloom so the crystals glow."),
+("AI_05_CrimsonSun","Red sunset mood from a colour matrix and tinted bloom."),
+("AI_08_GoldenHour","Warm golden light from a colour matrix and tinted bloom."),
+("AI_11_IonStorm","Cold storm light. Cold 11000K bloom and a custom LUT."),
+("AI_12_TiberiumNight","Night grade that treats green and blue tiberium, with a tinted glow."),
+("AI_13_ScorchedEarth","Hot desert. Warm 3800K bloom, filmic curve and heat haze."),
+("AI_14_ChromeAndRain","Cool and reflective. Bump mapping and an 8000K bloom."),
+("AI_15_Kodachrome99","Warm film look. 3200K bloom over a custom LUT."),
+("AI_16_Firestorm","Fire. 2400K bloom, heat haze and a custom LUT."),
+("AI_18_GDITacticalFeed","Monitor feed: clarity, high-pass sharpen and scanlines."),
+]
+PRESETS_C=[
+("C_C&CWarzone","Improved default. Ambient light and Magic Bloom with a colour matrix."),
+("C_C&CWarzoneBladeRunner","Improved Blade Runner look. Two blooms and lift gamma gain."),
+("C_C&CWarzoneFog","Improved Fog, rebuilt without depth effects."),
+("C_C&CWarzoneHeat","Improved Heat with heat haze and Magic Bloom."),
+("C_C&CWarzoneOG","Improved original look with SMAA in front."),
+("C_C&CWarzoneRetro","The original Retro, restored. CRT Hyllian and lens flares."),
+("C_C&CWarzoneWeather","Slimmed Weather. 21 effects, depth effects removed."),
+]
+FIXES=[
+("Crunchy or harsh","Lower the sharpen strength. Remove a second sharpener and check High Pass first."),
+("Glow too weak or too strong","Adjust Magic Bloom intensity and threshold, or the PD80 Bloom BloomMix."),
+("Colours look muddy","Count the tone curves. Turn off Fake HDR or a second filmic effect, then lower the LUT amount."),
+("Banding in sky or glow","Put Deband first in the chain."),
+("Sidebar is tinted","Check that UI Before and UI After wrap the chain and Isolate_UI is 1."),
+("Vignette is off-centre","Set Center to 0.395, 0.518 so it sits on the playfield."),
+("Tiberium looks yellow or flat","Lower warm tints and bloom colour. Make sure the grade treats green and blue crystals."),
+("The game lags","Remove X_ effects first, then extra blooms and Surface Blur."),
+("A change does nothing","Check the spelling of the setting name. A misspelled key is ignored without an error."),
+]
+GLOSS=[
+("Banding","Visible steps in a smooth gradient, caused by too few colour levels."),
+("Bloom","Bright areas bleeding light into their surroundings."),
+("Depth buffer","A per-pixel distance map some effects need. Warzone does not provide a usable one."),
+("Isolate_UI","A setting that keeps the sidebar out of the effects. Set it to 1."),
+("Kelvin","Colour temperature. Low numbers are warm and orange, high numbers are cold and blue."),
+("LUT","Look-up table: a small image that maps every input colour to a graded colour."),
+("Preset","An .ini file listing the effects that are on, their order and their settings."),
+("Technique","ReShade's name for one effect. Presets refer to effects by technique name."),
+("Tone curve","Any effect that remaps brightness: HDR, filmic, DPX, Technicolor, Tonemap, Curves."),
+("Vignette","Darkening toward the edges of the picture."),
+]
