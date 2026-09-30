@@ -94,3 +94,9 @@ lighting option does not apply to the campaign). Ambient 1.0 = full daylight. Ti
 
 Rules: Snow theater splits at ambient 0.55; ion storm missions get Ion Storm; strong red tint = Burning Dusk;
 otherwise ambient <= 0.46 Night, <= 0.66 Overcast, <= 0.84 Day, above that Baked Day.
+
+## Notes
+- Tiberium colour lives in the LUT: it is a colour rule, so anything with the same colour gets it too. Civilian
+  buildings and street lights are often blue, so they share the blue-tiberium treatment (colour only, no animation).
+  Any animated effect on blue (e.g. Living Tiberium glints/breathing) makes blue buildings and lights pulse:
+  animated tiberium effects must detect crystals by texture/pattern, not by colour alone.

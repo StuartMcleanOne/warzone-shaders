@@ -85,18 +85,18 @@ def natural_tiberium(c, strength):
     # green: dark parts -> deep emerald (150 deg), bright tips -> pale yellow-green (95 deg); calm the neon
     g_h = (150 - 55 * ss(0.25, 0.95, v)) / 360
     neon = ss(0.65, 1.0, s) * ss(0.5, 1.0, v)
-    g_s = s * (1 - 0.15 * neon)
+    g_s = np.minimum(s * (1 - 0.30 * neon), 0.72 - 0.12 * ss(0.7, 1.0, v))
     g_v = v * (1 - 0.06 * neon)
     # blue: towards icy steel (212 deg), less saturated, bright parts go pale
-    b_h = np.full_like(h, 212 / 360)
-    b_s = s * 0.78
+    b_h = (205 + 20 * (1 - ss(0.3, 0.9, v))) / 360
+    b_s = np.minimum(s * 0.8, 0.62 - 0.12 * ss(0.7, 1.0, v))
     b_v = v * 0.97
     hg = np.stack([h + (g_h - h) * 0.85, g_s, g_v], -1)
     hb = np.stack([h + (((b_h - h + 0.5) % 1.0) - 0.5) * 0.8, b_s, b_v], -1)
     out = c.copy()
     # keep the glowing lime / neon at the bright tips; reshape the body of the crystal
-    wg = (green * strength * (1 - 0.65 * ss(0.65, 1.0, v)))[..., None]
-    wb = (blue * strength * (1 - 0.70 * ss(0.55, 1.0, v)))[..., None]
+    wg = (green * strength * (1 - 0.30 * ss(0.65, 1.0, v)))[..., None]
+    wb = (blue * strength * (1 - 0.30 * ss(0.55, 1.0, v)))[..., None]
     out = out * (1 - wg) + hsv2rgb(hg) * wg
     out = out * (1 - wb) + hsv2rgb(hb) * wb
     return out
@@ -125,7 +125,7 @@ def grade(c, p):
     hsv0 = rgb2hsv(c)
     tibm = np.maximum(hue_window(hsv0[..., 0], 118 / 360, 40 / 360, 15 / 360), hue_window(hsv0[..., 0], 235 / 360, 35 / 360, 12 / 360))
     tibm = tibm * ss(0.2, 0.45, hsv0[..., 1]) * ss(0.2, 0.45, hsv0[..., 2])
-    sat = p["sat"] + (max(p["sat"], 1.0) - p["sat"]) * 0.8 * tibm
+    sat = p["sat"] + (1.0 - p["sat"]) * 0.55 * tibm
     l = luma(x)[..., None]
     x = l + (x - l) * sat[..., None]
     # soft highlight shoulder
@@ -133,6 +133,14 @@ def grade(c, p):
     over = np.maximum(x - k, 0)
     x = np.minimum(x, k) + over / (1 + over / (1 - k))
     x = np.clip(x, 0, 1)
+    # mature tiberium after the grade too: the grade's contrast/warmth must not push it back to neon
+    hx = rgb2hsv(x)
+    s0 = rgb2hsv(c)[..., 1]
+    cap = np.where(hue_window(hx[..., 0], 118 / 360, 40 / 360, 15 / 360) > 0.5, np.minimum(s0 * 0.85, 0.58), 1.0)
+    cap = np.where(hue_window(hx[..., 0], 225 / 360, 35 / 360, 12 / 360) > 0.5, np.minimum(s0 * 0.80, 0.50), cap)
+    capped = hsv2rgb(np.stack([hx[..., 0], np.minimum(hx[..., 1], cap), hx[..., 2] * np.where(cap < 1, 0.96, 1.0)], -1))
+    w = (tibm * p["tib"])[..., None]
+    x = x * (1 - w) + capped * w
     # fire, explosions, weapon fire: hotter and richer than the game drew them, the same in every preset;
     # lamps and near-white: pushed towards clean bright white
     hsv = rgb2hsv(c)
