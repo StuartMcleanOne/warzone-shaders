@@ -1,0 +1,67 @@
+WHICH PRESET FOR WHICH MISSION  (Custom\Campaign)
+
+TIBERIAN SUN - GDI
+  Reinforce Phoenix Base                     WZ_Burning_Dusk
+  Secure The Region                          WZ_Burning_Dusk
+  Secure Crash Site                          WZ_Overcast
+  Secure the Region                          WZ_Baked_Day
+  Defend Crash Site                          WZ_Ion_Storm
+  Destroy Radar Array                        WZ_Night
+  Rescue Tratos                              WZ_Day
+  Rescue Tratos                              WZ_Day
+  Destroy Vega's Dam                         WZ_Night
+  Destroy Vega's Base                        WZ_Day
+  Capture Hammerfest Base                    WZ_Snow_Day
+  Retrieval of Disrupter Crystals            WZ_Snow_Night
+  Rescue the Prisoners                       WZ_Overcast
+  Destroy Chemical Supply Station            WZ_Day
+  Mine the Power Grid                        WZ_Overcast
+  Destroy the Chemical Missile Plant         WZ_Overcast
+  Destroy Prototype Facility                 WZ_Day
+  Destroy Prototype Facility                 WZ_Overcast
+  Weather the Storm                          WZ_Ion_Storm
+  Final Conflict                             WZ_Day
+
+TIBERIAN SUN - NOD
+  The Messiah Returns                        WZ_Day
+  Retaliation                                WZ_Baked_Day
+  Destroy Hassan's Temple and Capture Him    WZ_Night
+  Free Rebel Commander                       WZ_Overcast
+  Eviction Notice                            WZ_Day
+  Blackout                                   WZ_Ion_Storm
+  Salvage Operation                          WZ_Overcast
+  Sheep's Clothing                           WZ_Ion_Storm
+  Locate and Capture Umagon                  WZ_Day
+  Capture Umagon                             WZ_Overcast
+  Destroy the Research Facility              WZ_Day
+  Escort the Bio-toxin Trucks                WZ_Day
+  Villainess In Distress                     WZ_Snow_Night
+  Re-establish Nod Presence                  WZ_Day
+  Protect the Waste Convoys                  WZ_Overcast
+  Destroy the Mammoth MkII Prototype         WZ_Snow_Night
+  Capture Jake McNeil                        WZ_Snow_Night
+  A New Beginning                            WZ_Snow_Night
+  Illegal Data Transfer                      WZ_Snow_Night
+
+FIRESTORM - GDI
+  Kodiak Down!                               WZ_Ion_Storm
+  Party Crashers                             WZ_Overcast
+  The Tratos Riots                           WZ_Snow_Day
+  GDI 04: In the Box                         WZ_Baked_Day
+  GDI 05: Dogma Day Afternoon                WZ_Overcast
+  Escape from CABAL                          WZ_Baked_Day
+  GDI 07: The Cyborgs are Coming             WZ_Snow_Day
+  Factory Recall                             WZ_Day
+  GDI 09:Core of the Problem                 WZ_Day
+
+FIRESTORM - NOD
+  Operation Reboot                           WZ_Overcast
+  Seeds of Destruction                       WZ_Overcast
+  NOD 03:Tratos Final Act                   WZ_Overcast
+  Mutant Extermination                       WZ_Ion_Storm
+  Escape from CABAL                          WZ_Day
+  NOD 06: The Needs of the Many!             WZ_Snow_Day
+  NOD 07: Determined Retribution             WZ_Baked_Day
+  NOD 08: Harvester Hunting                  WZ_Ion_Storm
+  NOD 09:Core of the Problem                 WZ_Day
+
