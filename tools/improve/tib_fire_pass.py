@@ -70,8 +70,9 @@ def cube_to_lut(cube):
     return Image.fromarray((np.clip(img, 0, 1) * 255 + 0.5).astype(np.uint8))
 
 
-def hue_toward(h, target, amt):
-    return (h + (((target - h + 0.5) % 1.0) - 0.5) * amt) % 1.0
+def hue_toward(h, target, amt, limit=22 / 360):
+    d = np.clip((((target - h + 0.5) % 1.0) - 0.5) * amt, -limit, limit)
+    return (h + d) % 1.0
 
 
 def apply(cube, m):
@@ -82,13 +83,13 @@ def apply(cube, m):
     h, s, v = ho[..., 0], ho[..., 1], ho[..., 2]
 
     # --- tiberium masks on the input colour
-    green = hue_window(h0, 118 / 360, 38 / 360, 15 / 360) * ss(0.14, 0.38, s0) * ss(0.12, 0.30, v0)
+    green = hue_window(h0, 120 / 360, 36 / 360, 14 / 360) * ss(0.28, 0.52, s0) * ss(0.12, 0.30, v0)
     blue = hue_window(h0, 232 / 360, 30 / 360, 12 / 360) * ss(0.30, 0.55, s0) * ss(0.15, 0.30, v0)
     blue *= 0.6  # civilian buildings and lights are blue too: static, gentle only
 
     g_h = (m["g_dark"] + (m["g_bright"] - m["g_dark"]) * ss(0.25, 0.95, v0)) / 360
     g_s = np.minimum(s, np.minimum(s0 * m["g_rel"], m["g_cap"] - 0.10 * ss(0.75, 1.0, v0)))
-    tg = hsv2rgb(np.stack([hue_toward(h, g_h, 0.8), g_s, v * m["g_val"]], -1))
+    tg = hsv2rgb(np.stack([hue_toward(h, g_h, 0.6), g_s, v * m["g_val"]], -1))
 
     b_h = (m["b_hue"] + 12 * (1 - ss(0.3, 0.9, v0))) / 360
     b_s = np.minimum(s, np.minimum(s0 * m["b_rel"], m["b_cap"] - 0.10 * ss(0.75, 1.0, v0)))
